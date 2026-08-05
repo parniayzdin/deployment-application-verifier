@@ -1,0 +1,25 @@
+{
+  "deployment_id": "synthetic-deployment-001",
+  "stack_status": "UPDATE_COMPLETE",
+  "api": {
+    "status_code": 500,
+    "response_body": {
+      "message": "Internal server error"
+    }
+  },
+  "lambda_execution": {
+    "completed": false
+  },
+  "cloudwatch": {
+    "errors": [
+      "KeyError: PAYMENTS_TABLE"
+    ]
+  },
+  "dynamodb": {
+    "expected_record_found": false
+  },
+  "cleanup": {
+    "required": false,
+    "completed": true
+  }
+}
