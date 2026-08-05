@@ -188,13 +188,3 @@ examples/             Sample verification plan
 tests/                Unit and integration style tests using fakes
 template.yaml         AWS SAM infrastructure
 ```
-
-## Current limitations
-
-* The repository is deployable, but no AWS deployment is performed automatically.
-* CloudWatch Logs can arrive shortly after the API response. Plans can configure
-  a small bounded settle time when needed.
-* The management API uses IAM authentication and is intended for engineering
-  workflows, not public browser access.
-* Cross account target verification requires an explicit role assumption design
-  and is not enabled by this template.
