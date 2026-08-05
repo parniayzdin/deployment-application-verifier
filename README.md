@@ -8,9 +8,9 @@ description of what the software does.
 
 ## Current milestone
 
-The first milestone is intentionally local and small. It loads synthetic
-post-deployment evidence and validates that the evidence has the expected
-structure.
+The current milestone is intentionally local and small. It loads synthetic
+post-deployment evidence, validates its structure, applies deterministic
+verification rules, and produces an evidence-backed report.
 
 The included scenario represents this outcome:
 
@@ -37,11 +37,15 @@ Evidence loader
 Pydantic validation
         |
         v
-Validated observation
+Deterministic verification rules
+        |
+        v
+PASS or FAIL report
 ```
 
-Later milestones will add normalization, deterministic verification rules, a
-structured report, and only then real AWS integrations.
+The report keeps confirmed evidence, likely causes, and recommended next steps
+separate. Later milestones will add more synthetic failure scenarios and only
+then real AWS integrations.
 
 ## Run locally
 
@@ -54,7 +58,7 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-Load the synthetic observation:
+Generate the report for the synthetic observation:
 
 ```powershell
 python -m app.main tests/fixtures/post_deployment/false_green_missing_environment_variable.json

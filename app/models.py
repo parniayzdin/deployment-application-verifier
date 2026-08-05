@@ -1,5 +1,6 @@
-"""Validated data shapes for post-deployment observations."""
+"""Validated data shapes for observations and verification reports."""
 
+from enum import Enum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -47,3 +48,41 @@ class VerificationObservation(BaseModel):
     cloudwatch: CloudWatchObservation
     dynamodb: DynamoDbObservation
     cleanup: CleanupObservation
+
+
+class VerificationStatus(str, Enum):
+    """The two possible outcomes for a verification check."""
+
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+
+
+EvidenceSource = Literal[
+    "cloudformation", "api", "lambda", "cloudwatch", "dynamodb", "cleanup"
+]
+
+
+class ConfirmedEvidence(BaseModel):
+    """A fact directly observed by the verifier."""
+
+    source: EvidenceSource
+    check: str
+    message: str
+
+
+class LikelyCause(BaseModel):
+    """A possible explanation supported by, but not equal to, confirmed facts."""
+
+    message: str
+    supported_by: list[EvidenceSource]
+
+
+class VerificationReport(BaseModel):
+    """The evidence-backed result for one verification run."""
+
+    deployment_id: str
+    infrastructure_status: VerificationStatus
+    application_status: VerificationStatus
+    confirmed_evidence: list[ConfirmedEvidence]
+    likely_causes: list[LikelyCause]
+    recommended_next_steps: list[str]
