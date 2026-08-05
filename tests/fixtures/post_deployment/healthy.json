@@ -1,0 +1,12 @@
+{
+  "deployment_id": "synthetic-deployment-healthy",
+  "stack_status": "CREATE_COMPLETE",
+  "api": {
+    "status_code": 201,
+    "response_body": {"saved": true}
+  },
+  "lambda_execution": {"completed": true},
+  "cloudwatch": {"errors": []},
+  "dynamodb": {"expected_record_found": true},
+  "cleanup": {"required": true, "completed": true}
+}
