@@ -1,0 +1,41 @@
+{
+  "stack_name": "payments-api-dev",
+  "enabled": true,
+  "api_check": {
+    "url": "https://example.execute-api.us-east-1.amazonaws.com/payments",
+    "method": "POST",
+    "headers": {
+      "X-Synthetic-Test": "true"
+    },
+    "request_body": {
+      "payment_id": "synthetic-payment-001",
+      "amount": 1
+    },
+    "expected_status_codes": [201],
+    "timeout_seconds": 8
+  },
+  "lambda_check": {
+    "function_name": "payments-api-handler-dev",
+    "payload": {
+      "operation": "health_check"
+    },
+    "expected_status_code": 200
+  },
+  "cloudwatch_check": {
+    "log_group_name": "/aws/lambda/payments-api-handler-dev",
+    "filter_pattern": "?ERROR ?Exception ?\"Task timed out\"",
+    "lookback_seconds": 300,
+    "settle_seconds": 2,
+    "max_results": 20
+  },
+  "dynamodb_check": {
+    "table_name": "payments-dev",
+    "key": {
+      "payment_id": "synthetic-payment-001"
+    },
+    "expected_attributes": {
+      "status": "CREATED"
+    },
+    "cleanup_after_verification": true
+  }
+}

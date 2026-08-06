@@ -8,7 +8,6 @@ from pydantic import ValidationError
 from app.loaders import load_observation
 from app.models import VerificationObservation
 
-
 FIXTURE_PATH = Path(
     "tests/fixtures/post_deployment/false_green_missing_environment_variable.json"
 )

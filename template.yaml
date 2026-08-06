@@ -1,0 +1,152 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Event driven post deployment application verifier
+
+Parameters:
+  ReportTtlDays:
+    Type: Number
+    Default: 30
+    MinValue: 1
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures:
+      - arm64
+    MemorySize: 512
+    Timeout: 30
+    Tracing: Active
+    Environment:
+      Variables:
+        PLANS_TABLE: !Ref VerificationPlans
+        REPORTS_TABLE: !Ref VerificationReports
+        REPORT_TTL_DAYS: !Ref ReportTtlDays
+
+Resources:
+  ManagementApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: v1
+      EndpointConfiguration:
+        Type: REGIONAL
+      TracingEnabled: true
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+
+  VerifierFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.handlers.lambda_handler
+      Description: Collects runtime evidence and produces verification reports
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VerificationPlans
+        - DynamoDBCrudPolicy:
+            TableName: !Ref VerificationReports
+        - Statement:
+            - Sid: ReadTargetLogs
+              Effect: Allow
+              Action:
+                - logs:FilterLogEvents
+              Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+            - Sid: InvokeTargetFunctions
+              Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+            - Sid: VerifyAndCleanTargetRecords
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:DeleteItem
+              Resource: !Sub arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*
+      Events:
+        CloudFormationComplete:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - aws.cloudformation
+              detail-type:
+                - CloudFormation Stack Status Change
+              detail:
+                status-details:
+                  status:
+                    - CREATE_COMPLETE
+                    - UPDATE_COMPLETE
+            RetryPolicy:
+              MaximumEventAgeInSeconds: 3600
+              MaximumRetryAttempts: 2
+        Health:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ManagementApi
+            Path: /health
+            Method: GET
+        PutPlan:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ManagementApi
+            Path: /plans/{stack_name}
+            Method: PUT
+        GetPlan:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ManagementApi
+            Path: /plans/{stack_name}
+            Method: GET
+        ManualVerification:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ManagementApi
+            Path: /verify/{stack_name}
+            Method: POST
+        GetReport:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ManagementApi
+            Path: /reports/{deployment_id}
+            Method: GET
+
+  VerificationPlans:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: stack_name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: stack_name
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  VerificationReports:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: deployment_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: deployment_id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+Outputs:
+  ManagementApiUrl:
+    Description: IAM protected management API base URL
+    Value: !Sub https://${ManagementApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/v1
+  PlansTableName:
+    Value: !Ref VerificationPlans
+  ReportsTableName:
+    Value: !Ref VerificationReports

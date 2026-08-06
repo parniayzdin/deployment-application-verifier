@@ -1,0 +1,20 @@
+{
+  "version": "0",
+  "id": "11111111-2222-3333-4444-555555555555",
+  "detail-type": "CloudFormation Stack Status Change",
+  "source": "aws.cloudformation",
+  "account": "123456789012",
+  "time": "2026-08-05T14:00:00Z",
+  "region": "us-east-1",
+  "resources": [
+    "arn:aws:cloudformation:us-east-1:123456789012:stack/payments-api-dev/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+  ],
+  "detail": {
+    "stack-id": "arn:aws:cloudformation:us-east-1:123456789012:stack/payments-api-dev/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    "status-details": {
+      "status": "UPDATE_COMPLETE",
+      "status-reason": ""
+    },
+    "client-request-token": "deployment-example"
+  }
+}
