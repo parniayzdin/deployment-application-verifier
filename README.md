@@ -17,33 +17,6 @@ facts so the report never presents a guess as evidence.
 
 ## Verification architecture
 
-A verification begins when CloudFormation reports a successful deployment. This
-simplified view focuses on the automatic path; the management API can also start
-the same verifier manually.
-
-```mermaid
-flowchart TD
-    CF["CloudFormation deployment<br/>reports success"] --> EB["EventBridge"]
-    EB --> VERIFIER["Verifier Lambda"]
-    VERIFIER --> ENABLED{"Plan registered<br/>and enabled?"}
-
-    ENABLED -- "No" --> ERROR["Return error"]
-    ENABLED -- "Yes" --> RUN["Run the configured checks"]
-
-    RUN --> API["Application API"]
-    RUN -. "optional" .-> LAMBDA["Target Lambda"]
-    RUN -. "optional" .-> DATABASE["DynamoDB record"]
-
-    API --> RESULT{"Did every required<br/>check pass?"}
-    LAMBDA --> RESULT
-    DATABASE --> RESULT
-
-    RESULT -- "Yes" --> PASS["PASS report"]
-    RESULT -- "No" --> FAIL["FAIL report<br/>with next steps"]
-    PASS --> REPORTS[("Save report<br/>DynamoDB")]
-    FAIL --> REPORTS
-```
-
 Solid arrows show the main path. Dotted arrows are optional checks used only
 when they are enabled in the verification plan. The rule engine, not an AI
 model, decides whether the deployment passes. The editable source is available
