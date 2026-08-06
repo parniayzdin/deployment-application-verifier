@@ -16,7 +16,8 @@ from explicit, testable rules. Likely causes are kept separate from confirmed
 facts so the report never presents a guess as evidence.
 
 ## Verification architecture
-![Post-deployment verifier architecture](docs/post-deployment-verifier-architecture.png)
+
+![Deployment Application Verifier architecture](docs/deployment-application-verifier-architecture.png)
 
 ## Why these AWS services are used
 
