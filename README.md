@@ -15,26 +15,44 @@ No AI model is used to decide whether a deployment passed. The verdict comes
 from explicit, testable rules. Likely causes are kept separate from confirmed
 facts so the report never presents a guess as evidence.
 
-## Architecture
+## How it fits together
 
-```mermaid
-flowchart LR
-    CF["CloudFormation stack"] -->|"CREATE_COMPLETE or UPDATE_COMPLETE"| EB["EventBridge rule"]
-    EB --> VF["Verifier Lambda"]
-    PT["DynamoDB plans table"] --> VF
-    VF --> API["Target application API"]
-    VF --> TL["Optional target Lambda"]
-    VF --> CW["Optional CloudWatch logs"]
-    VF --> TD["Optional target DynamoDB record"]
-    API --> RE["Deterministic rule engine"]
-    TL --> RE
-    CW --> RE
-    TD --> RE
-    RE --> RT["DynamoDB reports table"]
-    MA["IAM protected management API"] --> PT
-    MA --> VF
-    RT --> MA
+There are two ways to start a verification:
+
+```text
+Automatic:  CloudFormation finishes -> EventBridge -> Verifier Lambda
+Manual:     Developer or CI pipeline -> API Gateway -> Verifier Lambda
 ```
+
+Once the Lambda starts, it follows the same small pipeline every time:
+
+```text
+                 verification plan
+                   (DynamoDB)
+                        |
+                        v
+              +-------------------+
+              |  Verifier Lambda  |
+              +-------------------+
+                        |
+             run the configured checks
+                        |
+          +-------------+-------------+
+          |             |             |
+     application     target       logs or test
+        API          Lambda       database record
+          |             |             |
+          +-------------+-------------+
+                        |
+                 apply PASS/FAIL rules
+                        |
+                        v
+                  saved report
+                   (DynamoDB)
+```
+
+The management API is used to register plans, start a manual check, and read a
+saved report. EventBridge simply provides the automatic path after a deployment.
 
 ## Why these AWS services are used
 
