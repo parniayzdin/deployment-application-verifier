@@ -5,7 +5,7 @@ deployed application returns errors. This project closes that gap by collecting
 runtime evidence and producing a deterministic, evidence backed PASS or FAIL
 report after a deployment.
 
-The repository supports two workflows:
+This repository supports two workflows:
 
 1. A local workflow that evaluates synthetic JSON evidence without AWS.
 2. A deployable AWS workflow triggered by CloudFormation status events through
@@ -174,35 +174,3 @@ PUT /v1/plans/{stack_name}
 The JSON body is the verification plan. The path stack name must match the
 CloudFormation stack name exactly.
 
-## Management API
-
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/health` | Confirm that the verifier API is running |
-| PUT | `/plans/{stack_name}` | Create or replace a verification plan |
-| GET | `/plans/{stack_name}` | Retrieve a verification plan |
-| POST | `/verify/{stack_name}` | Run a registered plan manually |
-| GET | `/reports/{deployment_id}` | Retrieve a stored report |
-
-All routes use AWS IAM authorization. Do not place customer data, credentials,
-or secrets inside a verification plan. Use synthetic payloads and store secrets
-in an approved secret manager.
-
-## Repository layout
-
-```text
-app/
-  collectors.py      HTTP and AWS evidence collection
-  event_parser.py    CloudFormation EventBridge normalization
-  handlers.py        EventBridge and API Gateway Lambda handlers
-  loaders.py         Local JSON evidence loading
-  main.py            Local command line report generation
-  models.py          Validated plans, observations, and reports
-  repositories.py    DynamoDB and in memory persistence
-  service.py         Idempotent verification orchestration
-  verifier.py        Deterministic PASS or FAIL rules
-events/               Sample EventBridge event
-examples/             Sample verification plan
-tests/                Unit and integration style tests using fakes
-template.yaml         AWS SAM infrastructure
-```
