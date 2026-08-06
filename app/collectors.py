@@ -1,4 +1,4 @@
-"""Collect post deployment evidence from HTTP endpoints and AWS services."""
+"""Collect deployment evidence from HTTP endpoints and AWS services."""
 
 import json
 import time

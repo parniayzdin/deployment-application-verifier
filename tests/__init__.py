@@ -1,1 +1,1 @@
-"""Test package for the post deployment verifier."""
+"""Test package for the Deployment Application Verifier."""

@@ -1,4 +1,4 @@
-# Post Deployment Application Verifier
+# Deployment Application Verifier
 
 CloudFormation can report `CREATE_COMPLETE` or `UPDATE_COMPLETE` even when the
 deployed application returns errors. This project closes that gap by collecting
@@ -26,7 +26,7 @@ the same verifier manually.
 Solid arrows show the main path. Dotted arrows are optional checks used only
 when they are enabled in the verification plan. The rule engine, not an AI
 model, decides whether the deployment passes. The editable source is available
-in [docs/post-deployment-verifier.drawio](docs/post-deployment-verifier.drawio).
+in [docs/deployment-application-verifier.drawio](docs/deployment-application-verifier.drawio).
 
 ## Why these AWS services are used
 
