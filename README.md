@@ -16,11 +16,7 @@ from explicit, testable rules. Likely causes are kept separate from confirmed
 facts so the report never presents a guess as evidence.
 
 ## Verification architecture
-
-Solid arrows show the main path. Dotted arrows are optional checks used only
-when they are enabled in the verification plan. The rule engine, not an AI
-model, decides whether the deployment passes. The editable source is available
-in [docs/post-deployment-verifier.drawio](docs/post-deployment-verifier.drawio).
+![Post-deployment verifier architecture](docs/post-deployment-verifier-architecture.png)
 
 ## Why these AWS services are used
 
