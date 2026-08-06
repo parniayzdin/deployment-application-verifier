@@ -15,44 +15,55 @@ No AI model is used to decide whether a deployment passed. The verdict comes
 from explicit, testable rules. Likely causes are kept separate from confirmed
 facts so the report never presents a guess as evidence.
 
-## How it fits together
+## Verification architecture
 
-There are two ways to start a verification:
+A verification can start automatically after a successful CloudFormation event
+or manually through the management API. Both paths use the same workflow:
 
-```text
-Automatic:  CloudFormation finishes -> EventBridge -> Verifier Lambda
-Manual:     Developer or CI pipeline -> API Gateway -> Verifier Lambda
+```mermaid
+flowchart TD
+    CF["CloudFormation deployment<br/>reports success"] --> EB["EventBridge"]
+    USER["Developer or CI pipeline"] --> API["API Gateway<br/>manage plans, run checks, read reports"]
+
+    EB --> VERIFIER["Verifier Lambda"]
+    API --> VERIFIER
+    PLANS[("Verification plans<br/>DynamoDB")] --> VERIFIER
+
+    VERIFIER --> ENABLED{"Plan registered<br/>and enabled?"}
+    ENABLED -- "No" --> STOP["Ignore the event<br/>or return an error"]
+    ENABLED -- "Yes" --> RUN["Run the configured checks"]
+
+    RUN --> APP["Application API"]
+    RUN -. "optional" .-> FUNCTION["Target Lambda"]
+    RUN -. "optional" .-> LOGS["CloudWatch Logs"]
+    RUN -. "optional" .-> RECORD["DynamoDB record"]
+
+    APP --> RULES["Apply deterministic<br/>PASS or FAIL rules"]
+    FUNCTION --> RULES
+    LOGS --> RULES
+    RECORD --> RULES
+
+    RULES --> RESULT{"Did every required<br/>check pass?"}
+    RESULT -- "Yes" --> PASS["PASS report"]
+    RESULT -- "No" --> FAIL["FAIL report<br/>with evidence and next steps"]
+    PASS --> REPORTS[("Saved reports<br/>DynamoDB")]
+    FAIL --> REPORTS
+
+    classDef entry fill:#eaf2ff,stroke:#3b6ea8,color:#172033;
+    classDef process fill:#eef8ef,stroke:#4f7a55,color:#172033;
+    classDef decision fill:#fff4dc,stroke:#a66b17,color:#172033;
+    classDef storage fill:#f2edff,stroke:#7255a6,color:#172033;
+    classDef outcome fill:#f6f7f9,stroke:#647184,color:#172033;
+    class CF,EB,USER,API entry;
+    class VERIFIER,RUN,APP,FUNCTION,LOGS,RECORD,RULES process;
+    class ENABLED,RESULT decision;
+    class PLANS,REPORTS storage;
+    class STOP,PASS,FAIL outcome;
 ```
 
-Once the Lambda starts, it follows the same small pipeline every time:
-
-```text
-                 verification plan
-                   (DynamoDB)
-                        |
-                        v
-              +-------------------+
-              |  Verifier Lambda  |
-              +-------------------+
-                        |
-             run the configured checks
-                        |
-          +-------------+-------------+
-          |             |             |
-     application     target       logs or test
-        API          Lambda       database record
-          |             |             |
-          +-------------+-------------+
-                        |
-                 apply PASS/FAIL rules
-                        |
-                        v
-                  saved report
-                   (DynamoDB)
-```
-
-The management API is used to register plans, start a manual check, and read a
-saved report. EventBridge simply provides the automatic path after a deployment.
+Solid arrows show the main path. Dotted arrows are optional checks that are used
+only when they are enabled in the verification plan. The rule engine, not an AI
+model, decides whether the deployment passes.
 
 ## Why these AWS services are used
 
