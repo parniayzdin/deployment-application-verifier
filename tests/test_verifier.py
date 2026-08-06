@@ -1,4 +1,4 @@
-"""Tests for deterministic post-deployment verification rules."""
+"""Tests for deterministic deployment verification rules."""
 
 from pathlib import Path
 
