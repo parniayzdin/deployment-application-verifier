@@ -128,7 +128,7 @@ class CleanupObservation(StrictModel):
 
 
 class VerificationObservation(StrictModel):
-    """All observations collected for one post deployment verification run."""
+    """All observations collected for one deployment verification run."""
 
     deployment_id: str = Field(min_length=1)
     stack_status: Literal["CREATE_COMPLETE", "UPDATE_COMPLETE"]

@@ -11,7 +11,7 @@ def parse_args() -> argparse.Namespace:
     """Read the evidence file path supplied on the command line."""
 
     parser = argparse.ArgumentParser(
-        description="Verify an application using synthetic post-deployment evidence."
+        description="Verify an application using synthetic deployment evidence."
     )
     parser.add_argument("evidence_file", type=Path)
     return parser.parse_args()
