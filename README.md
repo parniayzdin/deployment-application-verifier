@@ -21,8 +21,7 @@ facts so the report never presents a guess as evidence.
 
 Solid arrows show the main path. Dotted arrows are optional checks used only
 when they are enabled in the verification plan. The rule engine, not an AI
-model, decides whether the deployment passes. The editable source is available
-in [docs/deployment-application-verifier.drawio](docs/deployment-application-verifier.drawio).
+model, decides whether the deployment passes. 
 
 ## Why these AWS services are used
 
