@@ -1,4 +1,4 @@
-#                                                                            Deployment Application Verifier
+<p align="center">Deployment Application Verifier</p>
 
 CloudFormation can report `CREATE_COMPLETE` or `UPDATE_COMPLETE` even when the
 deployed application returns errors. This project closes that gap by collecting
